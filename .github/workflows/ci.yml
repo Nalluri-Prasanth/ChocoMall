@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: maven
+
+      - name: Build and test
+        run: ./mvnw -B verify
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Frontend interaction tests
+        run: node --test tools/frontend_test.mjs
+
+      - name: Keep the runnable jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: services
+          path: |
+            choco-admin/target/choco-admin-*.jar
+            choco-portal/target/choco-portal-*.jar
+            choco-search/target/choco-search-*.jar
+
+  smoke:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: services
+          path: jars
+
+      - name: Start the services and run the end-to-end script
+        run: |
+          java -jar jars/choco-admin/target/choco-admin-1.0.0.jar > admin.log 2>&1 &
+          for i in $(seq 1 40); do curl -fs localhost:8080/actuator/health | grep -q UP && break; sleep 3; done
+          java -jar jars/choco-portal/target/choco-portal-1.0.0.jar > portal.log 2>&1 &
+          java -jar jars/choco-search/target/choco-search-1.0.0.jar > search.log 2>&1 &
+          for p in 8085 8081; do for i in $(seq 1 40); do curl -fs localhost:$p/actuator/health | grep -q UP && break; sleep 3; done; done
+          python3 tools/smoke_test.py
+
+      - name: Service logs on failure
+        if: failure()
+        run: tail -n 80 admin.log portal.log search.log
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [admin, portal, search]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build ${{ matrix.target }} image
+        run: docker build --target ${{ matrix.target }} -t chocomall-${{ matrix.target }} .

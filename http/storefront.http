@@ -1,0 +1,75 @@
+### Storefront requests (VS Code REST Client / IntelliJ HTTP Client). Start choco-portal first (dev profile).
+
+@host = http://localhost:8085
+
+### Browse (public)
+GET {{host}}/home/content
+
+###
+GET {{host}}/product/search?keyword=caramel&sort=3
+
+### Products without peanuts or tree nuts (allergen ids come from the reference list)
+GET {{host}}/product/search?excludeAllergens=5,6
+
+###
+GET {{host}}/product/detail/1
+
+### Sign in as the demo customer
+# @name login
+POST {{host}}/sso/login
+Content-Type: application/json
+
+{ "username": "demo", "password": "Demo@12345" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### Add six single bonbons... or a box of 6 built from two flavors (product 47 is Build-a-box)
+POST {{host}}/cart/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "productId": 47, "skuId": 1, "quantity": 1,
+  "box": [ { "productId": 1, "quantity": 4 }, { "productId": 2, "quantity": 2 } ] }
+
+###
+GET {{host}}/cart/list
+Authorization: Bearer {{token}}
+
+### Price the basket (coupon, points, fees) without ordering
+POST {{host}}/order/confirm
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "cartItemIds": [1], "fulfillmentType": "PICKUP", "giftSleeve": true, "giftMessage": "Enjoy!" }
+
+### Place the order, then pay it (tok_decline simulates a declined card)
+POST {{host}}/order/generate
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "cartItemIds": [1], "fulfillmentType": "PICKUP" }
+
+###
+POST {{host}}/payment/pay
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "orderId": 1, "method": "CARD", "cardToken": "tok_ok" }
+
+### Ask for a personalised plaque
+POST {{host}}/personalization/submit
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "kind": "NAME_PLAQUE", "text": "Happy Birthday Mia", "quantity": 1, "neededBy": "2026-12-20" }
+
+### Book seats at a tasting
+GET {{host}}/experience/list
+
+###
+POST {{host}}/experience/book
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "sessionId": 1, "seats": 2 }

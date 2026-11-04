@@ -1,0 +1,100 @@
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+  port: 8080
+
+spring:
+  application:
+    name: choco-admin
+  profiles:
+    default: dev
+  datasource:
+    url: jdbc:h2:mem:chocomall;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
+  cache:
+    type: caffeine
+    cache-names: adminDetails
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=10m
+  jackson:
+    default-property-inclusion: non_null
+
+secure:
+  dynamic-authorization: true
+  ignored-urls:
+    - /
+    - /index.html
+    - /app/**
+    - /shared/**
+    - /favicon.ico
+    - /admin/login
+    - /v3/api-docs/**
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /actuator/health/**
+    - /actuator/info
+    - /files/**
+  # any signed-in staff member may call these without a matching resource grant
+  authenticated-urls:
+    - /admin/info
+    - /admin/logout
+    - /admin/password
+  cors-allowed-origins:
+    - http://localhost:3000
+    - http://localhost:8090
+  jwt:
+    # Base64-encoded HMAC key (at least 32 bytes). Always override with JWT_SECRET outside local development.
+    secret: ${JWT_SECRET:Y2hvY29tYWxsLWRldi1vbmx5LXNlY3JldC1rZXktY2hhbmdlLW1lLXBsZWFzZSE=}
+    expiration-seconds: 28800
+    audience: admin
+
+chocomall:
+  seed:
+    reference-data: true
+    demo-shop: false
+  store:
+    type: memory
+  messaging:
+    type: none
+  storage:
+    type: local
+  jobs:
+    enabled: true
+  login:
+    max-attempts: 5
+    lockout-minutes: 15
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
+  level:
+    com.chocomall: INFO

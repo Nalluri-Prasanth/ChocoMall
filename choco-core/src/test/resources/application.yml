@@ -1,0 +1,29 @@
+spring:
+  datasource:
+    # a unique in-memory database per Spring context keeps test classes isolated
+    url: jdbc:h2:mem:${random.uuid};MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  cache:
+    type: caffeine
+    cache-names: testCache
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+chocomall:
+  seed:
+    reference-data: false
+    demo-shop: false
+  jobs:
+    enabled: false
+  store:
+    type: memory
+  messaging:
+    type: none

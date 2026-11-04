@@ -1,0 +1,57 @@
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+  port: 8081
+
+spring:
+  application:
+    name: choco-search
+  profiles:
+    default: dev
+  datasource:
+    url: jdbc:h2:mem:chocomall;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  jackson:
+    default-property-inclusion: non_null
+  cache:
+    type: none
+
+search:
+  # database (default, no infrastructure) or elasticsearch
+  engine: database
+  # Shared secret for /search/index/** (rebuild, add, remove). Leave empty to disable index management.
+  admin-key: ${SEARCH_ADMIN_KEY:}
+
+chocomall:
+  seed:
+    reference-data: true
+    demo-shop: false
+  messaging:
+    type: none
+  jobs:
+    enabled: false
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when_authorized
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

@@ -1,0 +1,16 @@
+# Local development: a file-based H2 database shared with the storefront (AUTO_SERVER lets both apps open it),
+# demo data, and no external infrastructure.
+spring:
+  datasource:
+    url: jdbc:h2:file:${user.home}/.chocomall/db/chocomall;MODE=MySQL;AUTO_SERVER=TRUE
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.amqp.RabbitAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration
+      - org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoConfiguration
+
+chocomall:
+  seed:
+    demo-shop: true
+    admin-password: Admin@12345
+    demo-password: Demo@12345

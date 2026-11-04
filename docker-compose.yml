@@ -1,0 +1,136 @@
+# Full production-like stack: MySQL, Redis, RabbitMQ, Elasticsearch, MinIO and the three services.
+#
+#   cp .env.example .env     # then set the secrets
+#   docker compose up --build
+#
+# Start-up order: databases and brokers -> admin (runs the Flyway migrations) -> portal and search.
+
+name: chocomall
+
+x-common-env: &common-env
+  SPRING_PROFILES_ACTIVE: prod
+  DB_URL: jdbc:mysql://mysql:3306/chocomall?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+  DB_USERNAME: chocomall
+  DB_PASSWORD: ${DB_PASSWORD}
+  REDIS_HOST: redis
+  REDIS_PASSWORD: ${REDIS_PASSWORD}
+  RABBIT_HOST: rabbitmq
+  RABBIT_USERNAME: ${RABBIT_USERNAME:-chocomall}
+  RABBIT_PASSWORD: ${RABBIT_PASSWORD}
+  JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in .env (openssl rand -base64 48)}
+  MINIO_ENDPOINT: http://minio:9000
+  MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+  MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+  CORS_ORIGINS: ${CORS_ORIGINS:-}
+
+services:
+  mysql:
+    image: mysql:8.0
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_0900_ai_ci", "--default-time-zone=+00:00"]
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}
+      MYSQL_DATABASE: chocomall
+      MYSQL_USER: chocomall
+      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}"]
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a $$REDIS_PASSWORD ping | grep PONG"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_USERNAME:-chocomall}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_PASSWORD:?Set RABBIT_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:15672:15672"   # management UI, this machine only
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"      # reachable only inside the compose network
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9200/_cluster/health | grep -qE 'green|yellow'"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+
+  minio:
+    image: minio/minio:RELEASE.2024-10-13T13-34-11Z
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?Set MINIO_ACCESS_KEY in .env}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?Set MINIO_SECRET_KEY in .env}
+    volumes:
+      - minio-data:/data
+    ports:
+      - "127.0.0.1:9001:9001"     # console, this machine only
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+  admin:
+    build: { context: ., target: admin }
+    depends_on:
+      mysql: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      rabbitmq: { condition: service_healthy }
+      minio: { condition: service_healthy }
+    environment:
+      <<: *common-env
+      # The first super admin is created only when none exists yet.
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    ports:
+      - "8080:8080"
+
+  portal:
+    build: { context: ., target: portal }
+    depends_on:
+      admin: { condition: service_healthy }
+    environment:
+      <<: *common-env
+    ports:
+      - "8085:8085"
+
+  search:
+    build: { context: ., target: search }
+    depends_on:
+      admin: { condition: service_healthy }
+      elasticsearch: { condition: service_healthy }
+    environment:
+      <<: *common-env
+      ELASTICSEARCH_URIS: http://elasticsearch:9200
+      SEARCH_ADMIN_KEY: ${SEARCH_ADMIN_KEY:?Set SEARCH_ADMIN_KEY in .env}
+    ports:
+      - "8081:8081"
+
+volumes:
+  mysql-data:
+  es-data:
+  minio-data:

@@ -1,0 +1,104 @@
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+  port: 8085
+
+spring:
+  application:
+    name: choco-portal
+  profiles:
+    default: dev
+  datasource:
+    url: jdbc:h2:mem:chocomall;MODE=MySQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+  cache:
+    type: caffeine
+    cache-names: homeContent,categoryTree
+    caffeine:
+      spec: maximumSize=200,expireAfterWrite=5m
+  jackson:
+    default-property-inclusion: non_null
+
+secure:
+  dynamic-authorization: false
+  # Read-only browsing and the sign-in flow are public; everything else needs a member token.
+  ignored-urls:
+    - /
+    - /index.html
+    - /app/**
+    - /shared/**
+    - /favicon.ico
+    - /sso/login
+    - /sso/register
+    - /sso/getAuthCode
+    - /sso/resetPassword
+    - /home/**
+    - /product/**
+    - /brand/**
+    - /bundle/**
+    - /preorder/**
+    - /help/**
+    - /guide/**
+    - /shop/**
+    - /experience/list
+    - /v3/api-docs/**
+    - /swagger-ui/**
+    - /swagger-ui.html
+    - /actuator/health/**
+    - /actuator/info
+    - /files/**
+  cors-allowed-origins:
+    - http://localhost:3000
+    - http://localhost:8090
+  jwt:
+    secret: ${JWT_SECRET:Y2hvY29tYWxsLWRldi1vbmx5LXNlY3JldC1rZXktY2hhbmdlLW1lLXBsZWFzZSE=}
+    expiration-seconds: 604800
+    audience: member
+
+chocomall:
+  seed:
+    reference-data: true
+    demo-shop: false
+  store:
+    type: memory
+  messaging:
+    type: none
+  storage:
+    type: local
+  jobs:
+    enabled: true
+  login:
+    max-attempts: 5
+    lockout-minutes: 15
+  sms:
+    # When true the verification code is returned in the API response (development only).
+    expose-code: false
+
+logging:
+  pattern:
+    level: "%5p [%X{requestId:-}]"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html

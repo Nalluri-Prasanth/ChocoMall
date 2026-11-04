@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 560" role="img" aria-labelledby="title">
+<title id="title">An illustrated assortment of twelve chocolate bonbons in a teal gift box</title>
+<defs>
+ <linearGradient id="chocolate" x2=".6" y2="1"><stop stop-color="#82513a"/><stop offset="1" stop-color="#352219"/></linearGradient>
+ <linearGradient id="milk" x2=".7" y2="1"><stop stop-color="#b0825c"/><stop offset="1" stop-color="#6b422a"/></linearGradient>
+ <radialGradient id="ruby"><stop stop-color="#b67569"/><stop offset="1" stop-color="#724039"/></radialGradient>
+ <filter id="shadow"><feDropShadow dx="0" dy="14" stdDeviation="12" flood-opacity=".2"/></filter>
+ <g id="bonbon"><rect x="0" y="0" width="76" height="76" rx="13" fill="#281a15"/><rect x="5" y="3" width="66" height="66" rx="13" fill="url(#chocolate)"/><path d="M16 20Q38 10 60 20" fill="none" stroke="#b78a63" stroke-width="2" opacity=".65"/></g>
+ <g id="praline"><circle cx="38" cy="40" r="37" fill="#38251b"/><circle cx="38" cy="35" r="34" fill="url(#milk)"/><path d="M11 26l53 13M12 40l47 13M19 15l43 11" stroke="#e6bc8b" stroke-width="3" fill="none" opacity=".7"/></g>
+ <g id="berry"><rect width="76" height="76" rx="38" fill="#412820"/><rect x="4" y="2" width="68" height="68" rx="34" fill="url(#ruby)"/><path d="M21 22q17-16 34 0" stroke="#d4a699" stroke-width="2" fill="none"/><circle cx="47" cy="27" r="3" fill="#d4a699"/></g>
+</defs>
+<path d="M35 462Q320 380 604 443" fill="none" stroke="#b7b6ad" stroke-width="1"/>
+<g transform="translate(125 84) rotate(-10 200 200)" filter="url(#shadow)">
+ <rect x="-14" y="-14" width="428" height="360" rx="5" fill="#173f4d"/>
+ <rect width="400" height="332" fill="#245f73"/>
+ <rect x="12" y="12" width="376" height="308" fill="#31251e"/>
+ <g fill="#8c7563"><rect x="21" y="21" width="358" height="290"/><path d="M21 116h358M21 216h358M109 21v290M202 21v290M295 21v290" stroke="#c9b5a0" stroke-width="4"/></g>
+ <use href="#bonbon" x="28" y="30"/><use href="#praline" x="121" y="30"/><use href="#berry" x="214" y="30"/><use href="#bonbon" x="307" y="30"/>
+ <use href="#berry" x="28" y="130"/><use href="#bonbon" x="121" y="130"/><use href="#praline" x="214" y="130"/><use href="#praline" x="307" y="130"/>
+ <use href="#praline" x="28" y="230"/><use href="#berry" x="121" y="230"/><use href="#bonbon" x="214" y="230"/><use href="#berry" x="307" y="230"/>
+</g>
+<path d="M70 445q70-100 156-32t235 11" fill="none" stroke="#733e24" stroke-width="20"/>
+<path d="M70 445q70-100 156-32t235 11" fill="none" stroke="#986143" stroke-width="2"/>
+</svg>

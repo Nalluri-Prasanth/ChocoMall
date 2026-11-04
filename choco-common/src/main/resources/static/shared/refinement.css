@@ -1,0 +1,21 @@
+/* Shared typography, controls and interaction states. */
+:root { --radius: 8px; --radius-sm: 4px; --shadow: 0 2px 8px rgb(31 42 46 / 4%); --font-display: Georgia, 'Times New Roman', serif; }
+body { font-size: 15px; }
+h1,h2,h3 { font-weight: 500; letter-spacing: -.035em; }
+input,select,textarea { min-height: 44px; border-radius: 5px; }
+input[type=checkbox],input[type=radio] { min-height:0; width:18px; height:18px; flex-shrink:0; }
+#view:focus { outline:none; }
+.btn { min-height: 44px; border-radius: 5px; padding: 10px 20px; font-size: .9rem; letter-spacing: .015em; }
+.btn.small { min-height: 36px; padding: 6px 12px; }
+.icon-btn { min-width: 44px; min-height: 44px; }
+:focus-visible { outline: 3px solid var(--cocoa-700); outline-offset: 4px; }
+.badge { border-radius: 3px; font-size: .72rem; letter-spacing: .025em; }
+.panel,.card { box-shadow: none; }
+.table-wrap { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+th { font-size: .7rem; letter-spacing: .07em; text-transform: uppercase; background: var(--bg); }
+td { padding-top: 14px; padding-bottom: 14px; }
+.modal { border-radius: 10px; max-height: 90dvh; }
+.skip-link { position: fixed; top: -80px; left: 16px; z-index: 1000; background: var(--surface); padding: 12px 20px; border: 2px solid var(--cocoa-700); }
+.skip-link:focus { top: 12px; }
+@media (max-width: 480px) { .grid.cols-2 { grid-template-columns: minmax(0,1fr); } .form-grid { grid-template-columns: minmax(0,1fr); } .modal { width: calc(100% - 16px); } .row { gap: 8px; } }
+@media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; } }

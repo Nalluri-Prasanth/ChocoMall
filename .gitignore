@@ -1,0 +1,25 @@
+# Build output
+target/
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local configuration and secrets
+.env
+application-local.yml
+*.pem
+
+# Local development data (H2 database and uploaded files live in ~/.chocomall, outside the repo)
+.chocomall/
+*.mv.db
+*.trace.db

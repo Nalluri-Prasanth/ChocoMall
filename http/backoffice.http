@@ -1,0 +1,63 @@
+### Back-office requests (VS Code REST Client / IntelliJ HTTP Client). Start choco-admin first (dev profile).
+
+@host = http://localhost:8080
+
+### Sign in
+# @name login
+POST {{host}}/admin/login
+Content-Type: application/json
+
+{ "username": "admin", "password": "Admin@12345" }
+
+###
+@token = {{login.response.body.$.data.token}}
+
+### Who am I, and which menus may I open?
+GET {{host}}/admin/info
+Authorization: Bearer {{token}}
+
+### Today's numbers and what needs attention
+GET {{host}}/report/dashboard
+Authorization: Bearer {{token}}
+
+### Which products earn money? (revenue minus ingredients, packaging, labour and fees)
+GET {{host}}/report/contribution?from=2026-01-01&to=2026-12-31
+Authorization: Bearer {{token}}
+
+### Core products that are live
+GET {{host}}/product/list?launchTier=CORE&published=true
+Authorization: Bearer {{token}}
+
+### Price minus costs, per unit
+GET {{host}}/product/1/contribution
+Authorization: Bearer {{token}}
+
+### Plan and release a production batch (controls: allergen check, temper test, best-before)
+POST {{host}}/production/create
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "productId": 1, "quantityUnits": 120, "processCode": "M11" }
+
+###
+POST {{host}}/production/1/release
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "allergenChecked": true, "temperTestPassed": true, "bestBefore": "2026-11-15", "wasteUnits": 6 }
+
+### Brand directory: the shortlisted brands in the sampling stage
+GET {{host}}/brand/list?stockingStatus=SAMPLING
+Authorization: Bearer {{token}}
+
+### The launch playbook and its progress
+GET {{host}}/guide/progress
+Authorization: Bearer {{token}}
+
+###
+GET {{host}}/guide/list?type=SALES_LAUNCH&phase=Launch
+Authorization: Bearer {{token}}
+
+### Orders waiting to be prepared
+GET {{host}}/order/list?status=PREPARING
+Authorization: Bearer {{token}}
